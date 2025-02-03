@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  CloudFormation template to create an S3 bucket with a randomly generated SHA hash in the bucket name.
+
+Resources:
+  RandomBucketName:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub
+        - "bucket-${Hash}"
+        - Hash: !Select
+            - 0
+            - !Split
+              - ":"
+              - !Sub
+                - "${GeneratedHash}"
+                - GeneratedHash: !Base64 !Ref AWS::StackId
+
+Outputs:
+  BucketName:
+    Description: The name of the randomly generated S3 bucket.
+    Value: !Ref Random Name
