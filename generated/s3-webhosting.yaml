@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  AWS CloudFormation template to create an Amazon S3 bucket configured for
+  static website hosting with public read access.
+
+Resources:
+  # Define the S3 Bucket resource
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    # DeletionPolicy ensures the bucket is retained even if the stack is deleted.
+    DeletionPolicy: Retain
+    Properties:
+      # AccessControl: Private # Canned ACL - Not needed when using Bucket Policy for public access
+      # Configure the bucket for static website hosting
+      WebsiteConfiguration:
+        IndexDocument: index.html # Default page to serve
+        ErrorDocument: error.html # Optional: Page to serve for 4XX errors
+      # Configure Public Access Block settings
+      # We need to allow public access via bucket policies for website hosting.
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true # Keep blocking public ACLs
+        BlockPublicPolicy: false # Allow public bucket policies (needed for website hosting)
+        IgnorePublicAcls: true # Keep ignoring public ACLs
+        RestrictPublicBuckets: false # Allow restricting public buckets (needed for website hosting)
+      Tags:
+        - Key: Environment
+          Value: Development
+        - Key: Project
+          Value: ExampleProject
+
+  # Define the Bucket Policy to grant public read access to objects
+  MyS3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref MyS3Bucket # Reference the bucket created above
+      PolicyDocument:
+        Statement:
+          - Sid: PublicReadGetObject # Statement ID
+            Effect: Allow # Allow access
+            Principal: '*' # Grant access to everyone (public)
+            Action: s3:GetObject # Allow retrieving objects
+            Resource: !Sub 'arn:aws:s3:::${MyS3Bucket}/*' # Grant access to all objects in the bucket
+
+Outputs:
+  # Output the name of the created bucket
+  BucketName:
+    Description: Name of the S3 bucket
+    Value: !Ref MyS3Bucket
+  # Output the ARN of the created bucket
+  BucketArn:
+    Description: ARN of the S3 bucket
+    Value: !GetAtt MyS3Bucket.Arn
+  # Output the website endpoint URL for the bucket
+  WebsiteURL:
+    Description: URL for the website hosted on the S3 bucket
+    Value: !GetAtt MyS3Bucket.WebsiteURL
+    Export:
+      Name: !Sub '${AWS::StackName}-WebsiteURL' # Optional: Export the URL for use in other stacks
+
+
