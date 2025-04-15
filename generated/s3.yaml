@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  AWS CloudFormation template to create a simple Amazon S3 bucket.
+  CloudFormation will automatically generate a unique physical name for the bucket.
+
+Resources:
+  # Define the S3 Bucket resource
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    # DeletionPolicy ensures the bucket is retained even if the stack is deleted.
+    # Change to 'Delete' if you want the bucket to be removed when the stack is deleted.
+    # NOTE: Buckets must be empty before CloudFormation can delete them if DeletionPolicy is 'Delete'.
+    DeletionPolicy: Retain
+    Properties:
+      # You can add specific properties here, for example:
+      # BucketName: my-unique-bucket-name # Explicitly naming is possible but less flexible.
+      # AccessControl: Private # Sets the Canned ACL - 'Private' is the default.
+      # VersioningConfiguration:
+      #   Status: Enabled
+      # PublicAccessBlockConfiguration:
+      #   BlockPublicAcls: true
+      #   BlockPublicPolicy: true
+      #   IgnorePublicAcls: true
+      #   RestrictPublicBuckets: true
+      Tags:
+        - Key: Environment
+          Value: Development
+        - Key: Project
+          Value: ExampleProject
+
+Outputs:
+  # Output the name of the created bucket
+  BucketName:
+    Description: Name of the S3 bucket created by this stack
+    Value: !Ref MyS3Bucket # References the logical ID of the bucket resource
+  # Output the ARN of the created bucket
+  BucketArn:
+    Description: ARN of the S3 bucket created by this stack
+    Value: !GetAtt MyS3Bucket.Arn # Uses the GetAtt intrinsic function to get the ARN attribute
+
